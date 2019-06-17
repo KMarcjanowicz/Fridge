@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Lodówka</title>
+    <script src='tinymce/tinymce.min.js'></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function (event) {
+            //----------------------------------------------------------------------start_of_code
+            var add = true;
+            var id;
+            var paper_tab = []
+            var counter = 0;
+            function click() {
+                id = "paper_" + counter;;
+                counter++;
+                add_div.style.backgroundImage = "url('img/button2.png')";
+                id = String(id)
+                new _Paper;
+                paper_tab.push(id)
+                add_div.onclick = false
+                licznik.innerHTML = "<h5>Przebieg: " + counter + "</h5><h5>Aktualnie na lodowce: " + paper_tab.length + "</h5>";
+                setTimeout(function () {
+                    add_div.style.backgroundImage = "url('img/button.png')";
+                    add_div.onclick = click;
+                }, 1000);
+            }
+            //----------------------------------------------------------------------start of layout creation
+            var add_div = document.createElement("div")
+            add_div.className = "add_div"
+            document.body.appendChild(add_div)
+            add_div.onclick = click;
+            var tiny = document.createElement("div")
+            tiny.className = "tiny";
+            document.body.appendChild(tiny)
+            var text = document.createElement("textarea")
+            text.id = "mytextarea"
+            tiny.appendChild(text)
+            var licznik = document.createElement("div")
+            licznik.className = "counter_div"
+            document.body.appendChild(licznik);
+            licznik.innerHTML = "<h5>Przebieg: " + counter + "</h5><h5>Aktualnie na lodowce: " + paper_tab.length + "</h5>";
+            //----------------------------------------------------------------------end of layout creation
+            function _Paper() {
+                var sheet
+                var text_div
+                var el_y
+                var el_x
+                var resize_div
+                this.Remove_Function = function () {
+                    sheet.parentNode.removeChild(sheet)
+                    var remove_id = sheet.id
+                    var index = paper_tab.indexOf(remove_id);
+                    if (index > -1) {
+                        paper_tab.splice(index, 1);
+                    }
+                    licznik.innerHTML = "<h5>Przebieg: " + counter + "</h5><h5>Aktualnie na lodowce: " + paper_tab.length + "</h5>";
+                }
+                this.Move_Function = function () {
+                    text_div.addEventListener("mousedown", function (e) {
+                        sheet.style.border = "1px solid rgb(118, 169, 252)"
+                        x = window.getComputedStyle(sheet).left
+                        y = window.getComputedStyle(sheet).top
+                        x = parseInt(x)
+                        y = parseInt(y)
+                        x = e.clientX - x
+                        y = e.clientY - y
+                        document.body.addEventListener("mousemove", onmove)
+                    })
+                    function onmove(e) {
+                        sheet.style.left = (e.clientX - x) + "px"
+                        sheet.style.top = (e.clientY - y) + "px"
+                    }
+                    document.body.addEventListener("mouseup", function (e) {
+                        document.body.removeEventListener("mousemove", onmove)
+                        sheet.style.border = ""
+                    })
+                }
+                this.Resize_Function = function () {
+                    function onres(e) {
+                        sheet.style.width = (e.clientX - el_x) + "px"
+                        sheet.style.height = (e.clientY - el_y) + "px"
+                    }
+                    resize_div.addEventListener("mousedown", function (e) {
+                        sheet.style.border = "1px solid rgb(118, 169, 252)"
+                        el_y = parseInt(window.getComputedStyle(sheet).top)
+                        el_x = parseInt(window.getComputedStyle(sheet).left)
+                        document.body.addEventListener("mousemove", onres)
+                    })
+                    document.body.addEventListener("mouseup", function (e) {
+                        document.body.removeEventListener("mousemove", onres)
+                        sheet.style.border = ""
+                    })
+                }
+                this.Index_Function = function () {
+                    var id_check = sheet.id
+                    for (var i = 0; i < paper_tab.length; i++) {
+                        if (paper_tab[i] == id_check) {
+                            var index = paper_tab.indexOf(id_check);
+                            paper_tab.splice(index, 1);
+                            paper_tab.push(id_check)
+                        }
+                    }
+                    for (var i = 0; i < paper_tab.length; i++) {
+                        var index_change = document.getElementById(paper_tab[i])
+                        index_change.style.zIndex = i;
+                    }
+                    index_change = document.getElementById(id_check)
+                    index_change.style.zIndex = paper_tab.length - 1;
+                }
+                this.Append_Function = function () {
+                    var that = this
+                    sheet = document.createElement("div")
+                    sheet.className = "paper"
+                    sheet.id = id
+                    document.body.addEventListener("mousemove", that.Move_Function);
+                    sheet.addEventListener("mousedown", that.Index_Function);
+                    document.body.appendChild(sheet)
+                    text_div = document.createElement("div")
+                    text_div.className = "text"
+                    sheet.appendChild(text_div)
+                    var remove_div = document.createElement("div")
+                    remove_div.className = "remove"
+                    //remove_div.innerHTML = "X"
+                    remove_div.addEventListener('click', that.Remove_Function);
+                    sheet.appendChild(remove_div)
+                    var edit_div = document.createElement("div")
+                    edit_div.className = "edit"
+                    //edit_div.innerHTML = "e"
+                    edit_div.addEventListener('click', that.Edit_Function);
+                    sheet.appendChild(edit_div)
+                    resize_div = document.createElement("div")
+                    resize_div.className = "resize"
+                    //resize_div.innerHTML = "<-|->"
+                    sheet.appendChild(resize_div)
+                    document.body.addEventListener("mousemove", that.Resize_Function);
+
+                }
+                this.Edit_Function = function () {
+                    //----------------------------------------------------------------------tinymce
+                    focus = this.parentElement.id
+                    tiny.style.display = "block"
+                    var change = document.getElementById(focus)
+                    console.log(change)
+                    var target = change.getElementsByClassName("text")
+                    console.log(target)
+                    console.log("click")
+
+                    tinymce.init({
+                        selector: "#mytextarea",
+                        width: "400px",
+                        height: "300px",
+                        menubar: false,
+                        toolbar: false,
+                        theme: 'modern',
+                    });
+                    function Ok_func() {
+                        change = document.getElementById(focus)
+                        target = change.getElementsByClassName("text")
+                        console.log(focus)
+                        var text_append = tinyMCE.activeEditor.getContent()
+                        target[0].innerHTML = text_append
+                        tiny.style.display = "none"
+                        text_append = ""
+                        tinyMCE.activeEditor.setContent(target[0].innerHTML);
+                    }
+                    function No_func() {
+                        tiny.style.display = "none"
+                    }
+                    setTimeout(function () {
+                        tinyMCE.activeEditor.setContent(target[0].innerHTML);
+                        var bar = document.getElementById("mceu_2-body")
+                        console.log(bar)
+                        if (add) {
+                            var write = document.createElement("img")
+                            write.src = "img/ok.png"
+                            write.onclick = Ok_func;
+                            write.style.position = "absolute"
+                            bar.appendChild(write)
+                            write.style.right = "53px"
+                            write.style.top = "3px"
+                            var no = document.createElement("img")
+                            no.src = "img/no.png"
+                            no.onclick = No_func;
+                            no.style.position = "absolute"
+                            no.style.right = "20px"
+                            no.style.top = "3px"
+                            bar.appendChild(no)
+                            no.style.margin = "5px;"
+                            add = false;
+                        }
+                    }, 50)
+                }
+                this.Append_Function();
+            }
+
+            //----------------------------------------------------------------------end_of_code
+        })
+    </script>
+    <link rel="stylesheet" href="font/font.css">
+    <style>
+        * {
+            font-family: 'minecraftfont';
+        }
+        html, body{
+            width: 100%;
+            height: 100%;
+        }
+        #mceu_0{
+            margin: 0 auto;
+            margin-top: 200px;
+        }
+        #mceu_2-body.img
+        {
+          margin-right: 20px;
+        }
+        .btiny{
+            position: absolute;
+            right: 5px;
+        }
+        .tiny {
+            z-index: 10000;
+            position: fixed;
+            display: none;
+            /* Hidden by default */
+            width: 100%;
+            /* Full width (cover the whole page) */
+            height: 100%;
+            /* Full height (cover the whole page) */
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* Black background with opacity */
+            margin: 0 auto;
+
+        }
+
+        #mytextarea {
+            display: none;
+        }
+
+        .counter_div {
+            position: fixed;
+            top: 0px;
+            right: 0px;
+            padding: 5px;
+            background-image: url("img/button.png");
+        }
+
+        .add_div {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 60px;
+            height: 40px;
+            background-image: url("img/button.png");
+        }
+
+        body {
+            position: relative;
+            background-image: url("img/wallpaper.jpg")
+        }
+
+        .add {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            font-size: 2em;
+            background-color: black;
+            width: 10px;
+            height: 10px;
+        }
+
+        .paper {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            height: 90px;
+            width: 190px;
+            background-image: url("img/bg.png");
+            min-height: 90px;
+            min-width: 190px;
+        }
+
+        .text {
+            position: absolute;
+            top: 10px;
+            right: 0;
+            left: 0;
+            bottom: 10px;
+            overflow: hidden;
+            padding: 10px;
+
+        }
+
+        .remove {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            background-image: url("img/remove.png");
+        }
+
+        .edit {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 10px;
+            height: 10px;
+            background-image: url("img/edit.png");
+        }
+
+        .resize {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            background-image: url("img/resize.png");
+        }
+    </style>
+</head>
+
+<body>
+
+</body>
+
+</html>
